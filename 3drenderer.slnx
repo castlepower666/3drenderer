@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="3drenderer/3drenderer.vcxproj" />
+  <Project Path="3drenderer/3drenderer.vcxproj" Id="13025863-bba6-472b-b01a-95c94915433f" />
 </Solution>
