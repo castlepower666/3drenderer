@@ -1,49 +1,6 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <SDL.h>   
+#include "display.h"
 
 bool is_running = false;
-SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL;
-SDL_Texture* color_buffer_texture = NULL;
-uint32_t* color_buffer = NULL;
-int window_width = 800;
-int window_height = 600;
-
-bool initialize_window(void)
-{
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
-    {
-        fprintf(stderr, "SDL_Init Error\n");
-
-        return false;
-    }
-
-    window = SDL_CreateWindow(
-        NULL,
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        800,
-        600,
-        SDL_WINDOW_BORDERLESS);
-
-    if (!window)
-    {
-        fprintf(stderr, "SDL_CreateWindow Error\n");
-
-        return false;
-    }
-
-    renderer = SDL_CreateRenderer(window, -1, 0);
-
-    if (!renderer)
-    {
-        fprintf(stderr, "SDL_CreateRenderer Error\n");
-        return false;
-    }
-
-    return true;
-}
 
 void setup(void)
 {
@@ -84,45 +41,15 @@ void update(void)
 
 }
 
-
-//把 颜色缓冲区 渲染到 渲染器 上
-void render_color_buffer(void)
-{
-    SDL_UpdateTexture(
-        color_buffer_texture,
-        NULL,
-        color_buffer,
-        (int)(window_width * sizeof(uint32_t))
-    );
-
-    SDL_RenderCopy(
-        renderer,
-        color_buffer_texture,
-        NULL,
-        NULL
-    );
-}
-
-//把 颜色缓冲区 清空为 指定颜色
-void clear_color_buffer(uint32_t color)
-{
-    for (int y = 0; y < window_height; y++)
-    {
-        for (int x = 0; x < window_width; x++)
-        {
-            color_buffer[(window_width * y) + x] = color;
-        }
-    }
-}
-
 void render(void)
 {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    render_color_buffer();
-    clear_color_buffer(0xFFFFFF00);
+    draw_rect(50, 50, 50, 50, 0xFFFF0000);
 
+    render_color_buffer();//颜色缓冲区渲染到渲染器上
+    clear_color_buffer(0xFFFFFF00);
 
     SDL_RenderPresent(renderer);
 }
@@ -147,7 +74,6 @@ int main(int argc, char* argv[])
         update();
         render();
     }
-
 
     return 0;
 }
