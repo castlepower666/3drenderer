@@ -53,9 +53,9 @@ bool initialize_window(void)
 //练习1：画网格
 void draw_grid(void)
 {
-    for (int y = 0; y < window_height; y += 10)
+    for (int y = 0; y < window_height; y += 100)
     {
-        for (int x = 0; x < window_width; x += 10)
+        for (int x = 0; x < window_width; x += 100)
         {
             draw_pixel(x, y, 0xFFFFFFFF);
         }

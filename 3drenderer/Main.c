@@ -1,12 +1,11 @@
 #include "display.h"
 #include "vector.h"
+#include "mesh.h"
 
-#define N_POINTS (9*9*9)
-vec3_t cube_points[N_POINTS];
-vec2_t projected_points[N_POINTS];
 float fov_factor = 1024;
 vec3_t camera_position = { 0,0,-5 };
 vec3_t cube_rotation = { 0,0,0 };
+int previous_frame_time = 0;
 
 bool is_running = false;
 
@@ -22,18 +21,7 @@ void setup(void)
         window_height
     );
 
-    int point_count = 0;
-    for (float x = -1; x <= 1; x += 0.25)
-    {
-        for (float y = -1; y <= 1; y += 0.25)
-        {
-            for (float z = -1; z <= 1; z += 0.25)
-            {
-                vec3_t new_point = { x,y,z };
-                cube_points[point_count++] = new_point;
-            }
-        }
-    }
+
 
 }
 
@@ -71,39 +59,60 @@ vec2_t project(vec3_t point)
 
 void update(void)
 {
+    //while会阻塞程序，占满cpu；使用SDL_Delay可以让程序休眠一段时间，降低cpu占用率
+    //while (!SDL_TICKS_PASSED(SDL_GetTicks(), previous_frame_time + FRAME_TARGET_TIME));
+
+    int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
+    if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME)
+    {
+        SDL_Delay(time_to_wait);
+    }
+
+    previous_frame_time = SDL_GetTicks();
+
     cube_rotation.x += 0.001;
     cube_rotation.y += 0.001;
     cube_rotation.z += 0.001;
 
-    for (int i = 0; i < N_POINTS; i++)
+    for (int i = 0; i < N_MESH_VERTICES; i++)
     {
-        vec3_t point = cube_points[i];
+        face_t mesh_face = mesh_faces[i];
 
-        vec3_t transformed_point = vec3_rotate_x(point, cube_rotation.x);
-        transformed_point = vec3_rotate_y(transformed_point, cube_rotation.y);
-        transformed_point = vec3_rotate_z(transformed_point, cube_rotation.z);
+        vec3_t face_vertices[3];
+        face_vertices[0] = mesh_vertices[mesh_face.a - 1];
+        face_vertices[1] = mesh_vertices[mesh_face.b - 1];
+        face_vertices[2] = mesh_vertices[mesh_face.c - 1];
 
-        transformed_point.z -= camera_position.z;
+        for (int j = 0; j < 3; j++)
+        {
+            vec3_t transformed_vertex = face_vertices[j];
 
-        vec2_t projected_point = project(transformed_point);
-        projected_points[i] = projected_point;
+            transformed_vertex = vec3_rotate_x(transformed_vertex, cube_rotation.x);
+            transformed_vertex = vec3_rotate_y(transformed_vertex, cube_rotation.y);
+            transformed_vertex = vec3_rotate_z(transformed_vertex, cube_rotation.z);
+
+            vec2_t projected_vertex = project(transformed_vertex);
+        }
+
     }
+
+
 }
 
 void render(void)
 {
     draw_grid();
 
-    for (int i = 0; i < N_POINTS; i++)
-    {
-        draw_rect(
-            projected_points[i].x + (window_width / 2),//把cube放到屏幕中心
-            projected_points[i].y + (window_height / 2),
-            4,
-            4,
-            0xFFFFFF00
-        );
-    }
+    //for (int i = 0; i < N_POINTS; i++)
+    //{
+    //    draw_rect(
+    //        projected_points[i].x + (window_width / 2),//把cube放到屏幕中心
+    //        projected_points[i].y + (window_height / 2),
+    //        4,
+    //        4,
+    //        0xFFFFFF00
+    //    );
+    //}
 
 
     render_color_buffer();//颜色缓冲区渲染到渲染器上
